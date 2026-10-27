@@ -49,7 +49,7 @@ export const defaultSettings: Settings = {
         engine: {
             enabled: true,
             version: EngineVersion.STOCKFISH_19_LITE,
-            depth: 18,
+            depth: 16,
             lines: 2,
             timeLimitEnabled: false,
             timeLimit: 1,

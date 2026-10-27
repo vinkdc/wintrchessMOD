@@ -7,6 +7,14 @@ import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
 import createGameEvaluator from "../lib/evaluate";
 
+// Use most of the device's cores, leaving one free to keep the page
+// responsive. Each single-threaded engine occupies one core.
+function getEngineCount() {
+    const cores = navigator.hardwareConcurrency || 4;
+
+    return Math.min(8, Math.max(1, cores - 1));
+}
+
 function useEvaluateGame() {
     const { t } = useTranslation("analysis");
 
@@ -33,7 +41,7 @@ function useEvaluateGame() {
             engineTimeLimit: settings.timeLimitEnabled
                 ? settings.timeLimit : undefined,
             cloudEngineLines: settings.lines,
-            maxEngineCount: 4,
+            maxEngineCount: getEngineCount(),
             engineConfig: engine => engine.setLineCount(settings.lines),
             onProgress: progress => {
                 setEvaluationProgress(progress);
