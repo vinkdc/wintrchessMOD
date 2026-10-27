@@ -34,12 +34,14 @@ function HelpCenter() {
                 {t("contact.message")}
             </span>
 
-            <a
-                className={styles.importantValue}
-                href="mailto:contact@wintrchess.com"
-            >
-                <b>contact@wintrchess.com</b>
-            </a>
+            {process.env.EMAIL_ACCOUNT
+                && <a
+                    className={styles.importantValue}
+                    href={`mailto:${process.env.EMAIL_ACCOUNT}`}
+                >
+                    <b>{process.env.EMAIL_ACCOUNT}</b>
+                </a>
+            }
         </div>
 
         <div className={styles.section}>

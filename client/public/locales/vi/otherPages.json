@@ -1,7 +1,7 @@
 {
     "news": {
         "title": "Tin tức",
-        "titleDescription": "Nhận bản cập nhật mới nhất từ nền tảng WintrChess",
+        "titleDescription": "Nhận bản cập nhật mới nhất từ nền tảng VinkChess",
         "error": "Có lỗi khi tải tin tức.",
         "article": {
             "unfound": "Chúng tôi không tìm được bài viết này.",

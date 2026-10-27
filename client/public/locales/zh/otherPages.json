@@ -1,7 +1,7 @@
 {
     "news": {
         "title": "报纸",
-        "titleDescription": "在WintrChess平台上获取最新更新",
+        "titleDescription": "在VinkChess平台上获取最新更新",
         "error": "加载报纸时出错。",
         "article": {
             "unfound": "我们未能找到这篇文章。",

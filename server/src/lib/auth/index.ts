@@ -34,13 +34,13 @@ function createAuth(database: mongo.Db) {
             requireEmailVerification: true,
             sendResetPassword: async ({ user, url }) => sendAccountEmail({
                 recipient: user.email,
-                subject: "Reset your WintrChess password",
-                message: "Please reset your WintrChess account's "
+                subject: "Reset your VinkChess password",
+                message: "Please reset your VinkChess account's "
                     + "password by clicking the button below:",
                 buttonLabel: "Reset Password",
                 buttonUrl: url,
                 plaintextFallback: "Please use the link to reset your"
-                    + ` WintrChess account's password: ${url}`
+                    + ` VinkChess account's password: ${url}`
             }),
             revokeSessionsOnPasswordReset: true
         },
@@ -48,12 +48,12 @@ function createAuth(database: mongo.Db) {
             autoSignInAfterVerification: true,
             sendVerificationEmail: async ({ user, url }) => sendAccountEmail({
                 recipient: user.email,
-                subject: "Verify your WintrChess account",
-                message: "Thank you for creating an account on WintrChess! "
+                subject: "Verify your VinkChess account",
+                message: "Thank you for creating an account on VinkChess! "
                     + "Please verify your account by clicking the button below:",
                 buttonLabel: "Verify Account",
                 buttonUrl: url,
-                plaintextFallback: `Please verify your WintrChess account: ${url}`
+                plaintextFallback: `Please verify your VinkChess account: ${url}`
             })
         },
         // Google sign-in is only offered when it has been configured
@@ -61,11 +61,11 @@ function createAuth(database: mongo.Db) {
             process.env.GOOGLE_OAUTH_CLIENT_ID
             && process.env.GOOGLE_OAUTH_CLIENT_SECRET
         ) ? {
-            google: {
-                clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
-                clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET
-            }
-        } : {},
+                google: {
+                    clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+                    clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET
+                }
+            } : {},
         user: {
             modelName: Collection.USERS,
             additionalFields: additionalUserFields,
@@ -74,11 +74,11 @@ function createAuth(database: mongo.Db) {
                 sendChangeEmailVerification: async (ctx) => sendAccountEmail({
                     recipient: ctx.newEmail,
                     subject: "Verify your new email address",
-                    message: "Please verify your WintrChess account's new"
+                    message: "Please verify your VinkChess account's new"
                         + " email address by clicking the button below:",
                     buttonLabel: "Verify Email Address",
                     buttonUrl: ctx.url,
-                    plaintextFallback: "Please verify your WintrChess account's"
+                    plaintextFallback: "Please verify your VinkChess account's"
                         + ` new email address: ${ctx.url}`
                 })
             },

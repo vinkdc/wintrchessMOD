@@ -9,7 +9,7 @@
     },
     "news": {
         "title": "Newspaper",
-        "titleDescription": "Get the latest updates on the WintrChess platform",
+        "titleDescription": "Get the latest updates on the VinkChess platform",
         "error": "There was an error while loading the newspaper.",
         "article": {
             "unfound": "We couldn't find this article.",

@@ -40,11 +40,13 @@ function Footer({ className, style }: FooterProps) {
             />
 
             <span className={styles.copyrightNotice}>
-                Copyright © {copyrightYear} wintrchess.com
+                Copyright © {copyrightYear} chess.binbi.space
             </span>
 
             <span className={styles.copyrightNotice}>
-                All rights reserved
+                Based on{" "}
+                <a href="https://github.com/WintrCat/wintrchess">WintrChess</a>
+                {" "}by WintrCat
             </span>
         </div>
 
@@ -75,7 +77,7 @@ function Footer({ className, style }: FooterProps) {
                     {t("footer.privacyPolicy")}
                 </a>
 
-                <a href="https://github.com/WintrCat/wintrchess">
+                <a href="https://github.com/vinkdc/wintrchessMOD">
                     {t("footer.openSource")}
                 </a>
             </div>

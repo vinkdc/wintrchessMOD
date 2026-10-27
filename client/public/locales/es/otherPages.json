@@ -1,7 +1,7 @@
 {
     "news": {
         "title": "Diario",
-        "titleDescription": "Obtén las últimas actualizaciones de la plataforma WintrChess",
+        "titleDescription": "Obtén las últimas actualizaciones de la plataforma VinkChess",
         "error": "Se produjo un error al cargar el periódico.",
         "article": {
             "unfound": "No hemos podido encontrar este artículo.",

@@ -1,7 +1,7 @@
 {
     "news": {
         "title": "Zeitung",
-        "titleDescription": "Erhalte die neuesten Updates auf der WintrChess Plattform",
+        "titleDescription": "Erhalte die neuesten Updates auf der VinkChess Plattform",
         "error": "Beim Laden der Zeitung ist ein Fehler aufgetreten.",
         "article": {
             "unfound": "Dieser Artikel konnte nicht gefunden werden.",

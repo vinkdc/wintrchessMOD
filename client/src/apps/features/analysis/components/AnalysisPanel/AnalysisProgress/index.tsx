@@ -43,7 +43,7 @@ function AnalysisProgress() {
         }
 
         function focusListener() {
-            document.title = "WintrChess";
+            document.title = "VinkChess";
             removeEventListener("focus", focusListener);
         }
 

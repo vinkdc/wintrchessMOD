@@ -26,7 +26,7 @@ function Terms() {
             </h2>
 
             <span>
-                wintrchess.com ("We", "Us", "Service(s)", "Website") is a website that
+                chess.binbi.space ("We", "Us", "Service(s)", "Website") is a website that
                 provides analysis on Chess games, as well as other Chess related tools.
                 For questions about these terms, you can contact us via the following
                 email address:
