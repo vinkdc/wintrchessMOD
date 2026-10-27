@@ -2,7 +2,13 @@ name: wintrchess
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        NODE_ENV: ${NODE_ENV:-production}
+        ADS_PUBLISHER_ID: ${ADS_PUBLISHER_ID:-}
+        ANALYTICS_MEASUREMENT_ID: ${ANALYTICS_MEASUREMENT_ID:-}
+        EMAIL_ACCOUNT: ${EMAIL_ACCOUNT:-}
     ports:
       - "${PORT:-8080}:8080"
     env_file:
