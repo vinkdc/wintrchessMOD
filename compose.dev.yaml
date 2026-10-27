@@ -1,0 +1,32 @@
+# Local development environment, separate from the production stack.
+# Start with: docker compose -f compose.dev.yaml up
+name: wintrchess-dev
+
+services:
+  app:
+    image: node:22-alpine
+    working_dir: /app
+    user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+    command: sh scripts/dev.sh
+    environment:
+      HOME: /tmp
+      NODE_ENV: development
+      PORT: 8080
+      ORIGIN: http://localhost:8090
+      AUTH_SECRET: development-only-secret
+      DATABASE_URI: mongodb://database/wintrchess
+    volumes:
+      - .:/app
+    ports:
+      # Bound to localhost only; reach it through an SSH tunnel
+      - "127.0.0.1:8090:8080"
+    depends_on:
+      - database
+  database:
+    image: mongo:latest
+    volumes:
+      - wintrchess-dev-database:/data/db
+    attach: false
+
+volumes:
+  wintrchess-dev-database:
