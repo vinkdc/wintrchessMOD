@@ -10,9 +10,11 @@ function appRouter(
     filepath: string,
     getPlaceholders?: PlaceholderGenerator
 ): RequestHandler {
+    // Pages reference fixed bundle names, so always revalidate them
     if (!getPlaceholders) {
         return async (req, res) => res.sendFile(
-            resolve(`client/public/apps/${filepath}`)
+            resolve(`client/public/apps/${filepath}`),
+            { headers: { "Cache-Control": "no-cache" } }
         );
     }
 
@@ -32,6 +34,7 @@ function appRouter(
         }
 
         res.setHeader("Content-Type", "text/html");
+        res.setHeader("Cache-Control", "no-cache");
 
         res.send(htmlContent);
     };
