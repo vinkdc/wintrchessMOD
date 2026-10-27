@@ -28,6 +28,9 @@ module.exports = {
     },
     output: {
         filename: "[name].bundle.js",
+        // Chunks are named by content so a new build never pairs with a
+        // stale cached chunk from an older one
+        chunkFilename: "[name].[contenthash].bundle.js",
         path: resolve("./dist")
     },
     resolve: {
