@@ -10,7 +10,9 @@ import playBoardSound from "@/lib/boardSounds";
 const keyMomentClassifications = [
     Classification.BRILLIANT,
     Classification.CRITICAL,
+    Classification.INACCURACY,
     Classification.MISTAKE,
+    Classification.MISS,
     Classification.BLUNDER
 ];
 

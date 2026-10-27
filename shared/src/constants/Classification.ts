@@ -6,6 +6,7 @@ export enum Classification {
     OKAY = "okay",
     INACCURACY = "inaccuracy",
     MISTAKE = "mistake",
+    MISS = "miss",
     BLUNDER = "blunder",
     THEORY = "theory",
     FORCED = "forced",
@@ -15,6 +16,7 @@ export enum Classification {
 export const classifValues: Record<Classification, number> = {
     [Classification.BLUNDER]: 0,
     [Classification.MISTAKE]: 1,
+    [Classification.MISS]: 1,
     [Classification.INACCURACY]: 2,
     [Classification.RISKY]: 2,
     [Classification.OKAY]: 3,
@@ -32,6 +34,7 @@ export const classifNags: Record<string, string | undefined> = {
     [Classification.CRITICAL]: "$1",
     [Classification.INACCURACY]: "$6",
     [Classification.MISTAKE]: "$2",
+    [Classification.MISS]: "$2",
     [Classification.BLUNDER]: "$4",
     [Classification.RISKY]: "$5"
 };

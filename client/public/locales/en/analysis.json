@@ -126,6 +126,7 @@
             "okay": "is an okay move",
             "inaccuracy": "is an inaccuracy",
             "mistake": "is a mistake",
+            "miss": "is a miss",
             "blunder": "is a blunder",
             "forced": "is forced",
             "theory": "is theory",
@@ -137,7 +138,9 @@
         "aiRateLimited": "The AI explanation limit has been reached for now. Please try again in a minute.",
         "explain": "Explain",
         "best": "Best",
-        "next": "Next"
+        "next": "Next",
+        "askAI": "Ask AI",
+        "noIdeas": "There's no clear tactic here - this is more about the overall position."
     },
     "classifications": {
         "brilliant": "Brilliant",
@@ -147,6 +150,7 @@
         "okay": "Okay",
         "inaccuracy": "Inaccuracy",
         "mistake": "Mistake",
+        "miss": "Miss",
         "blunder": "Blunder",
         "forced": "Forced",
         "theory": "Theory",
@@ -156,5 +160,18 @@
         "intro": "Your game has been analysed. Here's how it went - start the review to walk through the moments that decided it.",
         "start": "Start Review",
         "resume": "Resume"
+    },
+    "latestGame": {
+        "title": "Your latest game",
+        "versus": "vs {{opponent}}{{rating}}",
+        "results": {
+            "win": "Won",
+            "draw": "Draw",
+            "lose": "Lost",
+            "unknown": ""
+        },
+        "preparing": "Analysing in the background... {{progress}}%",
+        "ready": "Analysis ready",
+        "review": "Review"
     }
 }

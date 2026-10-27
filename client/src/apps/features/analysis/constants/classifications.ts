@@ -7,6 +7,7 @@ import iconClassificationsExcellent from "@assets/img/classifications/excellent.
 import iconClassificationsOkay from "@assets/img/classifications/okay.png";
 import iconClassificationsInaccuracy from "@assets/img/classifications/inaccuracy.png";
 import iconClassificationsMistake from "@assets/img/classifications/mistake.png";
+import iconClassificationsMiss from "@assets/img/classifications/miss.png";
 import iconClassificationsBlunder from "@assets/img/classifications/blunder.png";
 import iconClassificationsForced from "@assets/img/classifications/forced.png";
 import iconClassificationsTheory from "@assets/img/classifications/theory.png";
@@ -23,6 +24,7 @@ export const classificationImages = {
     [Classification.OKAY]: iconClassificationsOkay,
     [Classification.INACCURACY]: iconClassificationsInaccuracy,
     [Classification.MISTAKE]: iconClassificationsMistake,
+    [Classification.MISS]: iconClassificationsMiss,
     [Classification.BLUNDER]: iconClassificationsBlunder,
     [Classification.FORCED]: iconClassificationsForced,
     [Classification.THEORY]: iconClassificationsTheory,
@@ -41,6 +43,7 @@ export const classificationColours = {
     [Classification.OKAY]: "#97af8b",
     [Classification.INACCURACY]: "#f4bf44",
     [Classification.MISTAKE]: "#e28c28",
+    [Classification.MISS]: "#ee6b55",
     [Classification.BLUNDER]: "#c93230",
     [Classification.FORCED]: "#97af8b",
     [Classification.THEORY]: "#a88764",
@@ -55,6 +58,7 @@ export const classificationNames = {
     [Classification.OKAY]: "classifications.okay",
     [Classification.INACCURACY]: "classifications.inaccuracy",
     [Classification.MISTAKE]: "classifications.mistake",
+    [Classification.MISS]: "classifications.miss",
     [Classification.BLUNDER]: "classifications.blunder",
     [Classification.FORCED]: "classifications.forced",
     [Classification.THEORY]: "classifications.theory",

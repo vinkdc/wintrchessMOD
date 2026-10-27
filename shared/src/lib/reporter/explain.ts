@@ -17,6 +17,7 @@ import { getUnsafePieces } from "./utils/pieceSafety";
 const errorClassifications = [
     Classification.INACCURACY,
     Classification.MISTAKE,
+    Classification.MISS,
     Classification.BLUNDER
 ];
 
@@ -135,6 +136,12 @@ export function explainMove(node: StateTreeNode): string[] {
             + " - the alternatives are clearly worse."
         );
     } else if (errorClassifications.includes(classification)) {
+        if (classification == Classification.MISS) {
+            sentences.push(
+                "You missed a chance to punish your opponent's last move."
+            );
+        }
+
         // Missed forced mate
         if (
             previousEvaluation.type == "mate"

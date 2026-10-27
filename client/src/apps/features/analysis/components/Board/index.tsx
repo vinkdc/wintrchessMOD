@@ -31,6 +31,7 @@ function Board({
     blackProfile,
     theme,
     piecesDraggable = true,
+    movesLocked = false,
     node = defaultRootNode,
     flipped,
     evaluation,
@@ -54,6 +55,8 @@ function Board({
 
     function onSquareClick(square: Square, piece?: Piece) {
         squares.setHighlighted([]);
+
+        if (movesLocked) return;
 
         if (!piece || square == squares.selected) {
             squares.setSelected(undefined);
@@ -148,7 +151,7 @@ function Board({
                     onPromotionPieceSelect={onPromotionPieceSelect}
                     customSquare={squareRenderer}
                     customArrows={arrows}
-                    arePiecesDraggable={piecesDraggable}
+                    arePiecesDraggable={piecesDraggable && !movesLocked}
                     customLightSquareStyle={theme?.lightSquareColour
                         ? { backgroundColor: theme.lightSquareColour }
                         : undefined

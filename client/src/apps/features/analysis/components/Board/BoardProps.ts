@@ -23,6 +23,8 @@ interface BoardProps {
         pieceSet?: string;
     };
     piecesDraggable?: boolean;
+    // Prevents making moves by dragging or clicking pieces
+    movesLocked?: boolean;
     enableClassifications?: boolean;
 
     onAddMove?: (move: Move) => boolean;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { Chess } from "chess.js";
@@ -13,6 +13,7 @@ import { getSimpleNotation } from "shared/lib/utils/chess";
 import { getTopEngineLine } from "shared/types/game/position/EngineLine";
 import Evaluation from "shared/types/game/position/Evaluation";
 import { explainMove } from "shared/lib/reporter/explain";
+import { explainMoveIdeas } from "shared/lib/reporter/ideas";
 import {
     classificationColours,
     classificationImages,
@@ -29,6 +30,44 @@ import LogMessage from "@/components/common/LogMessage";
 import playBoardSound from "@/lib/boardSounds";
 
 import * as styles from "./ClassifiedMoveCard.module.css";
+
+type SentenceCache = WeakMap<StateTreeNode, {
+    classification?: Classification;
+    sentences: string[];
+}>;
+
+const explanationCache: SentenceCache = new WeakMap();
+const ideasCache: SentenceCache = new WeakMap();
+
+function getCachedSentences(cache: SentenceCache, node: StateTreeNode) {
+    const entry = cache.get(node);
+
+    // A new classification means the explanation may have changed
+    if (entry?.classification != node.state.classification) return;
+
+    return entry?.sentences;
+}
+
+function computeCachedSentences(
+    cache: SentenceCache,
+    node: StateTreeNode,
+    generate: (node: StateTreeNode) => string[]
+) {
+    let sentences: string[];
+
+    try {
+        sentences = generate(node);
+    } catch {
+        sentences = [];
+    }
+
+    cache.set(node, { classification: node.state.classification, sentences });
+
+    return sentences;
+}
+
+// Pause between taking a move back and playing the best move instead
+const bestMoveDelayMilliseconds = 500;
 
 function getPlayedMove(currentNode: StateTreeNode) {
     if (!currentNode.parent) return;
@@ -92,13 +131,37 @@ function ClassifiedMoveCard() {
 
     useEffect(() => setRealtimeClassifyError(), [node]);
 
-    const explanationSentences = useMemo(() => {
-        try {
-            return explainMove(node);
-        } catch {
-            return [];
-        }
+    const [ explanationSentences, setExplanationSentences ] = useState<string[]>(
+        () => getCachedSentences(explanationCache, node) || []
+    );
+
+    // Explanations are slow to generate, so they are produced just after
+    // the board has updated rather than while navigating
+    useEffect(() => {
+        const cached = getCachedSentences(explanationCache, node);
+        setExplanationSentences(cached || []);
+
+        if (cached) return;
+
+        const timeout = setTimeout(() => setExplanationSentences(
+            computeCachedSentences(explanationCache, node, explainMove)
+        ));
+
+        return () => clearTimeout(timeout);
     }, [node, node.state.classification]);
+
+    // Ideas are only worked out when asked for, using the Explain button
+    const [ ideaSentences, setIdeaSentences ] = useState<string[]>();
+
+    useEffect(() => setIdeaSentences(
+        getCachedSentences(ideasCache, node)
+    ), [node]);
+
+    function showIdeas() {
+        setIdeaSentences(
+            computeCachedSentences(ideasCache, node, explainMoveIdeas)
+        );
+    }
 
     const aiExplanation = useAIExplanation(node);
 
@@ -134,10 +197,25 @@ function ClassifiedMoveCard() {
         reviewNavigation.rememberResumePoint(node);
         setAutoplayEnabled(false);
 
-        const createdNode = addChildMove(node.parent, topAlternativeMove.san);
+        // Take the played move back first, so the two moves animate
+        // one after the other instead of at the same time
+        const parent = node.parent;
+        const bestMoveSan = topAlternativeMove.san;
 
-        setCurrentStateTreeNode(createdNode);
-        playBoardSound(createdNode);
+        setCurrentStateTreeNode(parent);
+
+        setTimeout(() => {
+            // Skip if the user navigated elsewhere in the meantime
+            const boardNode = useAnalysisBoardStore.getState()
+                .currentStateTreeNode;
+
+            if (boardNode != parent) return;
+
+            const createdNode = addChildMove(parent, bestMoveSan);
+
+            setCurrentStateTreeNode(createdNode);
+            playBoardSound(createdNode);
+        }, bestMoveDelayMilliseconds);
     }
 
     const evaluation = getTopEngineLine(node.state.engineLines)?.evaluation;
@@ -150,6 +228,10 @@ function ClassifiedMoveCard() {
     const showExplainButton = aiExplanation.enabled
         && !!node.state.classification
         && !aiExplanation.explanation;
+
+    const showIdeasButton = !ideaSentences
+        && !!node.state.classification
+        && node.state.engineLines.length > 0;
 
     return <div className={styles.wrapper}>
         <div
@@ -216,6 +298,15 @@ function ClassifiedMoveCard() {
                 </span>
             }
 
+            {ideaSentences
+                && <span className={styles.aiExplanation}>
+                    {ideaSentences.length > 0
+                        ? ideaSentences.join(" ")
+                        : t("classifiedMoveCard.noIdeas", { ns: "analysis" })
+                    }
+                </span>
+            }
+
             {aiExplanation.explanation
                 && <span className={styles.aiExplanation}>
                     {aiExplanation.explanation}
@@ -236,6 +327,7 @@ function ClassifiedMoveCard() {
 
             {(
                 showExplainButton
+                || showIdeasButton
                 || showBestButton
                 || reviewNavigation.inVariation
                 || reviewNavigation.hasNextKeyMoment
@@ -249,8 +341,17 @@ function ClassifiedMoveCard() {
                         >
                             💡 {aiExplanation.status == "loading"
                                 ? t("classifiedMoveCard.aiLoading", { ns: "analysis" })
-                                : t("classifiedMoveCard.explain", { ns: "analysis" })
+                                : t("classifiedMoveCard.askAI", { ns: "analysis" })
                             }
+                        </button>
+                    }
+
+                    {showIdeasButton
+                        && <button
+                            className={styles.actionButton}
+                            onClick={showIdeas}
+                        >
+                            💡 {t("classifiedMoveCard.explain", { ns: "analysis" })}
                         </button>
                     }
 

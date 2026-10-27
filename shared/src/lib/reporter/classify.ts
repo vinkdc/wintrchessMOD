@@ -12,6 +12,7 @@ import { getOpeningName } from "./utils/opening";
 import { pointLossClassify } from "./classification/pointLoss";
 import { considerBrilliantClassification } from "./classification/brilliant";
 import { considerCriticalClassification } from "./classification/critical";
+import { considerMissClassification } from "./classification/miss";
 
 export function classify(
     node: StateTreeNode,
@@ -63,6 +64,15 @@ export function classify(
     let classification = topMovePlayed
         ? Classification.BEST
         : pointLossClassify(previous, current, moverRating);
+
+    // Errors that only gave back an opponent's mistake are misses
+    if (
+        (
+            classification == Classification.MISTAKE
+            || classification == Classification.BLUNDER
+        )
+        && considerMissClassification(node, previous, current)
+    ) classification = Classification.MISS;
 
     // Consider only and brilliant classification
     if (

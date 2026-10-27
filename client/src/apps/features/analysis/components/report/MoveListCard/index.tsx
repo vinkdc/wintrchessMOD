@@ -24,6 +24,7 @@ const flaggedClassifications = [
     Classification.CRITICAL,
     Classification.INACCURACY,
     Classification.MISTAKE,
+    Classification.MISS,
     Classification.BLUNDER,
     Classification.RISKY
 ];
