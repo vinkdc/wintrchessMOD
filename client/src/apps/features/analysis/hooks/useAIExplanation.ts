@@ -12,7 +12,7 @@ import useAnalysisGameStore from "@analysis/stores/AnalysisGameStore";
 // Explanations already generated this session, keyed by node ID
 const explanationCache = new Map<string, string>();
 
-type AIExplanationStatus = "idle" | "loading" | "error";
+type AIExplanationStatus = "idle" | "loading" | "error" | "rateLimited";
 
 function useAIExplanation(node: StateTreeNode) {
     const executeCaptcha = useAltcha();
@@ -86,7 +86,11 @@ function useAIExplanation(node: StateTreeNode) {
         }
 
         if (!explainResponse?.ok) {
-            if (!isStale()) setStatus("error");
+            if (isStale()) return;
+
+            setStatus(explainResponse?.status == StatusCodes.TOO_MANY_REQUESTS
+                ? "rateLimited" : "error"
+            );
             return;
         }
 

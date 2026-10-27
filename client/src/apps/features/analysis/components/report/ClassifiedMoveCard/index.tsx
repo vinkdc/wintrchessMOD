@@ -216,6 +216,12 @@ function ClassifiedMoveCard() {
                     {t("classifiedMoveCard.aiError", { ns: "analysis" })}
                 </LogMessage>
             }
+
+            {aiExplanation.status == "rateLimited"
+                && <LogMessage theme="warn">
+                    {t("classifiedMoveCard.aiRateLimited", { ns: "analysis" })}
+                </LogMessage>
+            }
         </div>
 
         {nearestOpeningName

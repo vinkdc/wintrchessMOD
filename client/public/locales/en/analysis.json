@@ -134,7 +134,8 @@
         "alternative": "The best move was",
         "explainWithAI": "Explain with AI",
         "aiLoading": "Thinking...",
-        "aiError": "Couldn't get an AI explanation. Please try again."
+        "aiError": "Couldn't get an AI explanation. Please try again.",
+        "aiRateLimited": "The AI explanation limit has been reached for now. Please try again in a minute."
     },
     "classifications": {
         "brilliant": "Brilliant",

@@ -1,6 +1,7 @@
 import express, { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import Anthropic from "@anthropic-ai/sdk";
+import { GoogleGenAI, ApiError as GeminiApiError } from "@google/genai";
 import z from "zod";
 
 import { evaluationSchema } from "shared/types/game/position/Evaluation";
@@ -8,13 +9,71 @@ import analysisAuthenticator from "@/lib/security/analysis";
 
 const path = "/analysis/explain";
 
+// Thrown when a provider responds but gives no usable explanation
+class EmptyExplanationError extends Error {}
+
+// Thrown when a provider rejects a request for exceeding its rate limit
+class ExplanationRateLimitError extends Error {}
+
 let anthropicClient: Anthropic | undefined;
+let geminiClient: GoogleGenAI | undefined;
 
-// Created on first use, after environment variables have been loaded
-function getClient() {
-    if (!process.env.ANTHROPIC_API_KEY) return;
+async function explainWithClaude(prompt: string) {
+    anthropicClient ??= new Anthropic();
 
-    return anthropicClient ??= new Anthropic();
+    try {
+        const response = await anthropicClient.beta.messages.create({
+            model: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",
+            max_tokens: 4000,
+            output_config: { effort: "low" },
+            betas: ["server-side-fallback-2026-07-01"],
+            fallbacks: "default",
+            system: systemPrompt,
+            messages: [{ role: "user", content: prompt }]
+        });
+
+        if (response.stop_reason == "refusal")
+            throw new EmptyExplanationError();
+
+        return response.content
+            .filter(block => block.type == "text")
+            .map(block => block.text)
+            .join("");
+    } catch (err) {
+        if (err instanceof Anthropic.RateLimitError)
+            throw new ExplanationRateLimitError();
+
+        throw err;
+    }
+}
+
+async function explainWithGemini(prompt: string) {
+    geminiClient ??= new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
+    try {
+        const response = await geminiClient.models.generateContent({
+            model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
+            contents: prompt,
+            config: { systemInstruction: systemPrompt }
+        });
+
+        return response.text || "";
+    } catch (err) {
+        if (err instanceof GeminiApiError && err.status == 429)
+            throw new ExplanationRateLimitError();
+
+        throw err;
+    }
+}
+
+/**
+ * @description Returns the configured explanation provider, preferring
+ * Gemini when both are configured. Checked on each use so that it runs
+ * after environment variables have been loaded.
+ */
+function getExplainer() {
+    if (process.env.GEMINI_API_KEY) return explainWithGemini;
+    if (process.env.ANTHROPIC_API_KEY) return explainWithClaude;
 }
 
 const systemPrompt = "You are a friendly chess coach explaining one move from"
@@ -67,7 +126,7 @@ function buildPrompt(request: ExplainRequest) {
 const router = Router();
 
 router.get("/analysis/ai-status", (req, res) => {
-    res.json({ enabled: !!getClient() });
+    res.json({ enabled: !!getExplainer() });
 });
 
 router.use(path,
@@ -76,9 +135,9 @@ router.use(path,
 );
 
 router.post(path, async (req, res) => {
-    const client = getClient();
+    const explain = getExplainer();
 
-    if (!client) return res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE);
+    if (!explain) return res.sendStatus(StatusCodes.SERVICE_UNAVAILABLE);
 
     const parsedRequest = explainRequestSchema.safeParse(req.body);
 
@@ -86,41 +145,22 @@ router.post(path, async (req, res) => {
         return res.sendStatus(StatusCodes.BAD_REQUEST);
 
     try {
-        const response = await client.beta.messages.create({
-            model: process.env.ANTHROPIC_MODEL || "claude-opus-5-5",
-            max_tokens: 4000,
-            output_config: { effort: "low" },
-            betas: ["server-side-fallback-2026-07-01"],
-            fallbacks: "default",
-            system: systemPrompt,
-            messages: [{
-                role: "user",
-                content: buildPrompt(parsedRequest.data)
-            }]
-        });
+        const explanation = (
+            await explain(buildPrompt(parsedRequest.data))
+        ).trim();
 
-        if (response.stop_reason == "refusal")
-            return res.sendStatus(StatusCodes.BAD_GATEWAY);
-
-        const explanation = response.content
-            .filter(block => block.type == "text")
-            .map(block => block.text)
-            .join("")
-            .trim();
-
-        if (!explanation) return res.sendStatus(StatusCodes.BAD_GATEWAY);
+        if (!explanation) throw new EmptyExplanationError();
 
         res.json({ explanation });
     } catch (err) {
-        if (err instanceof Anthropic.RateLimitError) {
+        if (err instanceof ExplanationRateLimitError) {
             return res.sendStatus(StatusCodes.TOO_MANY_REQUESTS);
-        } else if (err instanceof Anthropic.APIError) {
-            console.error(`AI explanation failed (${err.status}):`, err.message);
+        } else if (err instanceof EmptyExplanationError) {
             return res.sendStatus(StatusCodes.BAD_GATEWAY);
         }
 
         console.error("AI explanation failed:", err);
-        res.sendStatus(StatusCodes.INTERNAL_SERVER_ERROR);
+        res.sendStatus(StatusCodes.BAD_GATEWAY);
     }
 });
 
