@@ -2,11 +2,15 @@ import React, { lazy } from "react";
 import { useTranslation } from "react-i18next";
 
 import AnalysisTab from "@analysis/constants/AnalysisTab";
+import AnalysisStatus from "@analysis/constants/AnalysisStatus";
 import useSettingsStore from "@/stores/SettingsStore";
 import useAnalysisGameStore from "@analysis/stores/AnalysisGameStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisTabStore from "@analysis/stores/AnalysisTabStore";
+import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
+import useReviewStore from "@analysis/stores/ReviewStore";
 import ClassifiedMoveCard from "@analysis/components/report/ClassifiedMoveCard";
+import ReviewOverview from "@analysis/components/report/ReviewOverview";
 import StateTreeTraverser from "@/components/chess/StateTreeTraverser";
 
 import TabBar from "./TabBar";
@@ -15,6 +19,7 @@ import RealtimeEngineArea from "./RealtimeEngineArea";
 
 import GameSelection from "./GameSelection";
 import GameReport from "./GameReport";
+import EvaluationGraphArea from "./GameReport/EvaluationGraphArea";
 import GameAnalysis from "./GameAnalysis";
 
 import AnalysisPanelProps from "./AnalysisPanelProps";
@@ -39,6 +44,25 @@ function AnalysisPanel({
     );
 
     const { activeTab } = useAnalysisTabStore();
+
+    const analysisRoot = useAnalysisGameStore(
+        state => state.analysisGame.stateTree
+    );
+
+    const scanning = useAnalysisProgressStore(
+        state => state.analysisStatus != AnalysisStatus.INACTIVE
+    );
+
+    const reviewStarted = useReviewStore(
+        state => state.reviewedRoot == analysisRoot
+    );
+
+    // The report tab moves from scanning, to an overview, to the review
+    const reportStage = scanning
+        ? "scanning"
+        : (reviewStarted ? "review" : "overview");
+
+    const reviewing = activeTab != AnalysisTab.REPORT || reportStage == "review";
     
     return <div
         className={`${styles.wrapper} ${className}`}
@@ -55,11 +79,12 @@ function AnalysisPanel({
 
             <AnalysisProgress/>
 
-            {(gameAnalysisOpen && settings.engine.enabled)
+            {(gameAnalysisOpen && settings.engine.enabled && reviewing)
                 && <RealtimeEngineArea/>
             }
 
             {gameAnalysisOpen
+                && reviewing
                 && currentNode.state.move
                 && !settings.classifications.hide
                 && (
@@ -71,7 +96,11 @@ function AnalysisPanel({
 
             {gameAnalysisOpen
                 ? (activeTab == AnalysisTab.REPORT
-                    ? <GameReport/>
+                    ? {
+                        scanning: <EvaluationGraphArea/>,
+                        overview: <ReviewOverview/>,
+                        review: <GameReport/>
+                    }[reportStage]
                     : <GameAnalysis/>
                 )
                 : <GameSelection/>

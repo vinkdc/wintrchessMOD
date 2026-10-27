@@ -24,6 +24,7 @@ import useSettingsStore from "@/stores/SettingsStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
 import useAIExplanation from "@analysis/hooks/useAIExplanation";
+import useReviewNavigation from "@analysis/hooks/useReviewNavigation";
 import LogMessage from "@/components/common/LogMessage";
 import playBoardSound from "@/lib/boardSounds";
 
@@ -123,9 +124,15 @@ function ClassifiedMoveCard() {
 
     const topAlternativeMove = getTopAlternativeMove(node);
 
+    const reviewNavigation = useReviewNavigation();
+
     function playTopAlternative() {
         if (!node.parent) return;
         if (!topAlternativeMove) return;
+
+        // Come back to this move after exploring the better line
+        reviewNavigation.rememberResumePoint(node);
+        setAutoplayEnabled(false);
 
         const createdNode = addChildMove(node.parent, topAlternativeMove.san);
 
@@ -134,16 +141,6 @@ function ClassifiedMoveCard() {
     }
 
     const evaluation = getTopEngineLine(node.state.engineLines)?.evaluation;
-
-    const nextNode = node.children.at(0);
-
-    function goToNextMove() {
-        if (!nextNode) return;
-
-        setCurrentStateTreeNode(nextNode);
-        setAutoplayEnabled(false);
-        playBoardSound(nextNode);
-    }
 
     const showBestButton = !!topAlternativeMove
         && !!node.state.classification
@@ -237,7 +234,12 @@ function ClassifiedMoveCard() {
                 </LogMessage>
             }
 
-            {(showExplainButton || showBestButton || nextNode)
+            {(
+                showExplainButton
+                || showBestButton
+                || reviewNavigation.inVariation
+                || reviewNavigation.hasNextKeyMoment
+            )
                 && <div className={styles.actions}>
                     {showExplainButton
                         && <button
@@ -268,13 +270,21 @@ function ClassifiedMoveCard() {
                         </button>
                     }
 
-                    {nextNode
-                        && <button
-                            className={styles.actionButton}
-                            onClick={goToNextMove}
+                    {reviewNavigation.inVariation
+                        ? <button
+                            className={`${styles.actionButton} ${styles.primaryAction}`}
+                            onClick={reviewNavigation.resume}
                         >
-                            {t("classifiedMoveCard.next", { ns: "analysis" })} →
+                            ↩ {t("review.resume", { ns: "analysis" })}
                         </button>
+                        : (reviewNavigation.hasNextKeyMoment
+                            && <button
+                                className={`${styles.actionButton} ${styles.primaryAction}`}
+                                onClick={reviewNavigation.nextKeyMoment}
+                            >
+                                {t("classifiedMoveCard.next", { ns: "analysis" })} →
+                            </button>
+                        )
                     }
                 </div>
             }

@@ -69,6 +69,15 @@
     background-color: var(--ui-shade-5);
 }
 
+.primaryAction {
+    background-color: var(--ui-blue);
+}
+
+.primaryAction:hover:not(:disabled) {
+    background-color: var(--ui-blue);
+    filter: brightness(1.1);
+}
+
 .actionButton:disabled {
     opacity: 0.7;
     cursor: wait;

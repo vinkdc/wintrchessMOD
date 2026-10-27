@@ -151,5 +151,10 @@
         "forced": "Forced",
         "theory": "Theory",
         "risky": "Risky"
+    },
+    "review": {
+        "intro": "Your game has been analysed. Here's how it went - start the review to walk through the moments that decided it.",
+        "start": "Start Review",
+        "resume": "Resume"
     }
 }
