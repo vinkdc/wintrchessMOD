@@ -8,6 +8,8 @@ import LogMessage from "@/components/common/LogMessage";
 import useImportGame from "@analysis/hooks/useImportGame";
 import useEvaluateGame from "@analysis/hooks/useEvaluateGame";
 import AnalyseButton from "../../AnalyseButton";
+import LatestGameCard from "./LatestGameCard";
+import useLatestGameStore from "@analysis/stores/LatestGameStore";
 import * as styles from "./GameSelection.module.css";
 
 function GameSelection() {
@@ -24,6 +26,14 @@ function GameSelection() {
     const evaluateGame = useEvaluateGame();
 
     async function onAnalyseClick() {
+        // Free up the engines if the latest game is no longer wanted
+        const latest = useLatestGameStore.getState();
+
+        if (!latest.handedOver && latest.status == "evaluating") {
+            latest.controller?.abort();
+            latest.update({ status: "idle" });
+        }
+
         try {
             var importedGame = await importSelectedGame(setStatusMessage);
         } catch (err) {
@@ -36,6 +46,8 @@ function GameSelection() {
     }
     
     return <>
+        <LatestGameCard/>
+
         <GameSelector
             saveLocalStorage
             onGameSelect={setSelectedGame}

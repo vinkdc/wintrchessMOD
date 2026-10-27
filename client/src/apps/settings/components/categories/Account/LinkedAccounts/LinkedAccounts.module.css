@@ -1,0 +1,33 @@
+.wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+}
+
+.description {
+    color: #b3b6bb;
+}
+
+.row {
+    display: flex;
+    gap: 10px;
+}
+
+.field {
+    flex-grow: 1;
+}
+
+.connectButton {
+    align-self: flex-start;
+}
+
+.verifyBox {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+
+    border-radius: 10px;
+    background-color: var(--ui-shade-4);
+}

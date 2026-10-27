@@ -21,6 +21,23 @@
                 "same": "You are already using this email address."
             }
         },
+        "linkedAccounts": {
+            "title": "Linked Chess Accounts",
+            "description": "Link your Lichess and Chess.com accounts so your latest game is ready to review as soon as you open the analysis page.",
+            "connectLichess": "Connect Lichess",
+            "unlink": "Unlink",
+            "chessComPlaceholder": "Chess.com username...",
+            "getCode": "Link",
+            "chessComInstructions": "To prove {{username}} is your account, paste this code into the \"Location\" field of your Chess.com profile, save it, then press Verify. You can change it back afterwards.",
+            "openChessComSettings": "Open Chess.com profile settings",
+            "verify": "Verify",
+            "chessComLinked": "Your Chess.com account has been linked.",
+            "chessComNotFound": "No Chess.com account exists with that username.",
+            "chessComInvalid": "Something went wrong. Please check the username and try again.",
+            "chessComCodeMissing": "The code wasn't found in your Chess.com Location yet. Save your profile on Chess.com, wait a few seconds, and try again.",
+            "lichessLinked": "Your Lichess account has been linked.",
+            "lichessFailed": "Your Lichess account could not be linked. Please try again."
+        },
         "manageAccount": {
             "title": "Manage Account",
             "resetPassword": "Reset Password",

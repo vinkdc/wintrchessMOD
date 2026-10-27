@@ -7,6 +7,7 @@ import Separator from "@/components/common/Separator";
 
 import EditProfile from "./EditProfile";
 import ManageAccount from "./ManageAccount";
+import LinkedAccounts from "./LinkedAccounts";
 import * as categoryStyles from "../Category.module.css";
 
 function Account() {
@@ -28,6 +29,14 @@ function Account() {
         <Separator className={categoryStyles.separator} />
 
         <EditProfile/>
+
+        <b className={categoryStyles.header}>
+            {t("account.linkedAccounts.title")}
+        </b>
+
+        <Separator className={categoryStyles.separator} />
+
+        <LinkedAccounts/>
 
         <b className={categoryStyles.header}>
             {t("account.manageAccount.title")}
