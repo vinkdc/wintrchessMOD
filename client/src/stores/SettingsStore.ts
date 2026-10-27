@@ -3,7 +3,9 @@ import { produce } from "immer";
 import { cloneDeep, merge } from "lodash-es";
 import z from "zod";
 
-import EngineVersion from "shared/constants/EngineVersion";
+import EngineVersion, {
+    availableEngineVersions
+} from "shared/constants/EngineVersion";
 import EngineArrowType from "@analysis/constants/EngineArrowType";
 import LocalStorageKey from "@/constants/LocalStorageKey";
 
@@ -46,8 +48,8 @@ export const defaultSettings: Settings = {
     analysis: {
         engine: {
             enabled: true,
-            version: EngineVersion.STOCKFISH_17_LITE,
-            depth: 16,
+            version: EngineVersion.STOCKFISH_19_LITE,
+            depth: 18,
             lines: 2,
             timeLimitEnabled: false,
             timeLimit: 1,
@@ -82,7 +84,20 @@ function fetchSettings() {
     if (value == null) return defaultSettingsCopy;
 
     try {
-        return merge(defaultSettingsCopy, JSON.parse(value));
+        const settings: Settings = merge(
+            defaultSettingsCopy, JSON.parse(value)
+        );
+
+        // Fall back to the default engine if a saved one was retired
+        if (!availableEngineVersions.includes(
+            settings.analysis.engine.version
+        )) {
+            settings.analysis.engine.version = (
+                defaultSettings.analysis.engine.version
+            );
+        }
+
+        return settings;
     } catch {
         return defaultSettingsCopy;
     }
