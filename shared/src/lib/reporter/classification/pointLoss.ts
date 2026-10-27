@@ -6,15 +6,20 @@ import {
 } from "../types/ExtractedNode";
 import { Classification } from "@/constants/Classification";
 import { adaptPieceColour } from "@/constants/PieceColour";
-import { getExpectedPointsLoss } from "../expectedPoints";
+import {
+    getExpectedPointsLoss,
+    getRatingCentipawnGradient
+} from "../expectedPoints";
 
 /**
  * @description Classify using two evaluations and a move colour,
- * using expected point losses or mate losses.
+ * using expected point losses or mate losses. The rating of the player
+ * who moved, if known, adjusts how costly an evaluation swing is.
  */
 export function pointLossClassify(
     previous: ExtractedPreviousNode,
-    current: ExtractedCurrentNode
+    current: ExtractedCurrentNode,
+    rating?: number
 ) {
     const previousSubjectiveValue = previous.evaluation.value * (
         (current.playedMove.color == WHITE ? 1 : -1)
@@ -90,18 +95,20 @@ export function pointLossClassify(
     const pointLoss = getExpectedPointsLoss(
         previous.evaluation,
         current.evaluation,
-        adaptPieceColour(current.playedMove.color)
+        adaptPieceColour(current.playedMove.color),
+        getRatingCentipawnGradient(rating)
     );
 
-    if (pointLoss < 0.01) {
+    // Cutoffs follow Chess.com's published expected points table
+    if (pointLoss < 0.005) {
         return Classification.BEST;
-    } else if (pointLoss < 0.045) {
+    } else if (pointLoss < 0.02) {
         return Classification.EXCELLENT;
-    } else if (pointLoss < 0.08) {
+    } else if (pointLoss < 0.05) {
         return Classification.OKAY;
-    } else if (pointLoss < 0.12) {
+    } else if (pointLoss < 0.1) {
         return Classification.INACCURACY;
-    } else if (pointLoss < 0.22) {
+    } else if (pointLoss < 0.2) {
         return Classification.MISTAKE;
     } else {
         return Classification.BLUNDER;

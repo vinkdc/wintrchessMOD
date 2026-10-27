@@ -5,6 +5,7 @@ import { useAltcha } from "@/apps/features/analysis/hooks/useAltcha";
 import AnalysisStatus from "@analysis/constants/AnalysisStatus";
 import useSettingsStore from "@/stores/SettingsStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
+import useAnalysisGameStore from "@analysis/stores/AnalysisGameStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
 import useAnalysisSessionStore from "@analysis/stores/AnalysisSessionStore";
 import { analyseNode } from "@analysis/lib/reporter";
@@ -23,6 +24,10 @@ function useRealtimeAnalyser() {
         currentStateTreeNode,
         dispatchCurrentNodeUpdate
     } = useAnalysisBoardStore();
+
+    const players = useAnalysisGameStore(
+        state => state.analysisGame.players
+    );
 
     const setRealtimeClassifyError = useAnalysisProgressStore(
         state => state.setRealtimeClassifyError
@@ -67,7 +72,11 @@ function useRealtimeAnalyser() {
 
         const analyseNodeResult = await analyseNode(currentStateTreeNode, {
             includeBrilliant: settings.classifications.included.brilliant,
-            includeTheory: settings.classifications.included.theory
+            includeTheory: settings.classifications.included.theory,
+            ratings: {
+                white: players.white.rating,
+                black: players.black.rating
+            }
         });
 
         // If session is invalid, await a new CAPTCHA solve

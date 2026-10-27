@@ -1,3 +1,5 @@
+import { WHITE } from "chess.js";
+
 import ReportOptions from "./types/AnalysisOptions";
 import { StateTreeNode } from "@/types/game/position/StateTreeNode";
 import { Classification, classifValues } from "@/constants/Classification";
@@ -30,8 +32,13 @@ export function classify(
         includeBrilliant: true,
         includeCritical: true,
         includeTheory: true,
+        ratings: {},
         ...options
     };
+
+    const moverRating = current.playedMove.color == WHITE
+        ? opts.ratings.white
+        : opts.ratings.black;
 
     // Consider forced classification
     if (previous.board.moves().length <= 1) {
@@ -55,7 +62,7 @@ export function classify(
     // Point loss classify
     let classification = topMovePlayed
         ? Classification.BEST
-        : pointLossClassify(previous, current);
+        : pointLossClassify(previous, current, moverRating);
 
     // Consider only and brilliant classification
     if (
@@ -64,9 +71,16 @@ export function classify(
         && considerCriticalClassification(previous, current)
     ) classification = Classification.CRITICAL;
 
+    // Brilliants may be nearly best, and lower rated players get more
+    // leeway on sacrifices, as described in Chess.com's classification
+    const minimumBrilliantClassification = (
+        moverRating != undefined && moverRating < 1200
+    ) ? Classification.OKAY : Classification.EXCELLENT;
+
     if (
         opts.includeBrilliant
-        && classifValues[classification] >= classifValues[Classification.BEST]
+        && classifValues[classification]
+            >= classifValues[minimumBrilliantClassification]
         && considerBrilliantClassification(previous, current)
     ) classification = Classification.BRILLIANT;
 

@@ -36,7 +36,11 @@ function useAnalyseGame(
         const analyseResult = await analyseStateTree(analysisGame.stateTree, {
             includeBrilliant: settings.classifications.included.brilliant,
             includeCritical: settings.classifications.included.critical,
-            includeTheory: settings.classifications.included.theory
+            includeTheory: settings.classifications.included.theory,
+            ratings: {
+                white: analysisGame.players.white.rating,
+                black: analysisGame.players.black.rating
+            }
         });
 
         // For any errors, display message or reset CAPTCHA

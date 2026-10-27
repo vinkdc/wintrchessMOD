@@ -20,7 +20,9 @@ export async function analyseStateTree(
     const reportURL = "/api/analysis/analyse"
         + `?brilliant=${String(options?.includeBrilliant)}`
         + `&critical=${String(options?.includeCritical)}`
-        + `&theory=${String(options?.includeTheory)}`;
+        + `&theory=${String(options?.includeTheory)}`
+        + `&whiteRating=${options?.ratings?.white || ""}`
+        + `&blackRating=${options?.ratings?.black || ""}`;
 
     const reportResponse = await fetch(reportURL, {
         method: "POST",
