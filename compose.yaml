@@ -9,6 +9,7 @@ services:
         ADS_PUBLISHER_ID: ${ADS_PUBLISHER_ID:-}
         ANALYTICS_MEASUREMENT_ID: ${ANALYTICS_MEASUREMENT_ID:-}
         EMAIL_ACCOUNT: ${EMAIL_ACCOUNT:-}
+        GOOGLE_OAUTH_CLIENT_ID: ${GOOGLE_OAUTH_CLIENT_ID:-}
     ports:
       - "${PORT:-8080}:8080"
     env_file:

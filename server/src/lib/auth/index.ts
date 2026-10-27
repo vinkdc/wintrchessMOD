@@ -56,12 +56,16 @@ function createAuth(database: mongo.Db) {
                 plaintextFallback: `Please verify your WintrChess account: ${url}`
             })
         },
-        socialProviders: {
+        // Google sign-in is only offered when it has been configured
+        socialProviders: (
+            process.env.GOOGLE_OAUTH_CLIENT_ID
+            && process.env.GOOGLE_OAUTH_CLIENT_SECRET
+        ) ? {
             google: {
-                clientId: process.env.GOOGLE_OAUTH_CLIENT_ID!,
-                clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!
+                clientId: process.env.GOOGLE_OAUTH_CLIENT_ID,
+                clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET
             }
-        },
+        } : {},
         user: {
             modelName: Collection.USERS,
             additionalFields: additionalUserFields,

@@ -11,6 +11,7 @@ ARG NODE_ENV=production
 ARG ADS_PUBLISHER_ID
 ARG ANALYTICS_MEASUREMENT_ID
 ARG EMAIL_ACCOUNT
+ARG GOOGLE_OAUTH_CLIENT_ID
 
 # Build everything into the image so a new deployment only has to start
 # the server, rather than building the client after the old one stops

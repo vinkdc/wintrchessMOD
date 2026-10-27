@@ -19,6 +19,9 @@ import * as styles from "../../index.module.css";
 import iconGoogle from "@assets/img/connections/google.png";
 import iconSignin from "@assets/img/interface/sign_in.svg";
 
+// OAuth client IDs are public, so the build can reveal whether one is set
+const googleSignInEnabled = !!process.env.GOOGLE_OAUTH_CLIENT_ID;
+
 function SignUp() {
     const { t } = useTranslation(["common", "otherPages"]);
 
@@ -95,19 +98,21 @@ function SignUp() {
                 {t("signIn.registerTitle", { ns: "otherPages" })}
             </span>
 
-            <Button
-                icon={iconGoogle}
-                iconSize="28px"
-                className={styles.submitButton}
-                style={{ gap: "10px" }}
-                onClick={googleLogin}
-            >
-                {t("signIn.registerButtonGoogle", { ns: "otherPages" })}
-            </Button>
+            {googleSignInEnabled && <>
+                <Button
+                    icon={iconGoogle}
+                    iconSize="28px"
+                    className={styles.submitButton}
+                    style={{ gap: "10px" }}
+                    onClick={googleLogin}
+                >
+                    {t("signIn.registerButtonGoogle", { ns: "otherPages" })}
+                </Button>
 
-            <Separator style={{ margin: 0 }}>
-                <b>{t("signIn.alternative", { ns: "otherPages" })}</b>
-            </Separator>
+                <Separator style={{ margin: 0 }}>
+                    <b>{t("signIn.alternative", { ns: "otherPages" })}</b>
+                </Separator>
+            </>}
 
             <TextField
                 wrapperStyle={{ width: "100%" }}
