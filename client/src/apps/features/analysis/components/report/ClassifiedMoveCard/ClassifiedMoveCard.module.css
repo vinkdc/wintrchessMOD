@@ -13,10 +13,65 @@
     background-color: var(--ui-shade-4);
 }
 
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
 .classification {
     display: flex;
     align-items: center;
     gap: 8px;
+    min-width: 0;
+}
+
+.evaluationBadge {
+    flex-shrink: 0;
+    padding: 3px 8px;
+
+    border-radius: 5px;
+    background-color: white;
+    color: #1b1c1e;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.blackAdvantage {
+    background-color: #1b1c1e;
+    color: white;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.actionButton {
+    padding: 8px 10px;
+
+    border: none;
+    border-radius: 8px;
+    background-color: var(--ui-shade-3);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 600;
+
+    cursor: pointer;
+    transition-duration: 0.2s;
+}
+
+.actionButton:hover:not(:disabled) {
+    background-color: var(--ui-shade-5);
+}
+
+.actionButton:disabled {
+    opacity: 0.7;
+    cursor: wait;
 }
 
 .classification > img {
@@ -26,28 +81,6 @@
 
 .classificationName {
     font-size: 1.4rem;
-}
-
-.bestAlternativeComment {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-
-    color: #4fe955
-}
-
-.bestAlternativeMove {
-    padding: 3px;
-
-    border-radius: 5px;
-    text-decoration: underline;
-
-    cursor: pointer;
-    transition-duration: 0.3s;
-}
-
-.bestAlternativeMove:hover {
-    background-color: rgba(0, 0, 0, 0.15);
 }
 
 .explanation {
@@ -63,29 +96,6 @@
     background-color: rgba(0, 0, 0, 0.15);
     color: white;
     line-height: 1.4;
-}
-
-.aiExplainButton {
-    align-self: flex-start;
-    padding: 5px 10px;
-
-    border: none;
-    border-radius: 5px;
-    background-color: #3d6fc4;
-    color: white;
-    font-size: 0.95rem;
-
-    cursor: pointer;
-    transition-duration: 0.3s;
-}
-
-.aiExplainButton:hover:not(:disabled) {
-    background-color: #4a80dd;
-}
-
-.aiExplainButton:disabled {
-    opacity: 0.7;
-    cursor: wait;
 }
 
 .opening {

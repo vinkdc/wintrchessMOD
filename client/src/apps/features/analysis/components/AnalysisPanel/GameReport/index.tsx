@@ -5,6 +5,7 @@ import useAnalysisGameStore from "@analysis/stores/AnalysisGameStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import AccuraciesCard from "@analysis/components/report/AccuraciesCard";
 import ClassificationCountCard from "@analysis/components/report/ClassificationCountCard";
+import MoveListCard from "@analysis/components/report/MoveListCard";
 
 import EvaluationGraphArea from "./EvaluationGraphArea";
 
@@ -16,6 +17,8 @@ function GameReport() {
     const accuracies = getGameAccuracy(analysisGame.stateTree);
     
     return <>
+        <MoveListCard/>
+
         <EvaluationGraphArea/>
 
         <AccuraciesCard accuracies={accuracies} />

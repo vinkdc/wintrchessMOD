@@ -132,10 +132,12 @@
             "risky": "is a risky idea"
         },
         "alternative": "The best move was",
-        "explainWithAI": "Explain with AI",
         "aiLoading": "Thinking...",
         "aiError": "Couldn't get an AI explanation. Please try again.",
-        "aiRateLimited": "The AI explanation limit has been reached for now. Please try again in a minute."
+        "aiRateLimited": "The AI explanation limit has been reached for now. Please try again in a minute.",
+        "explain": "Explain",
+        "best": "Best",
+        "next": "Next"
     },
     "classifications": {
         "brilliant": "Brilliant",

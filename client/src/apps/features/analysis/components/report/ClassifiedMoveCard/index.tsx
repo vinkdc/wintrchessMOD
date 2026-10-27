@@ -11,6 +11,7 @@ import {
 import { Classification } from "shared/constants/Classification";
 import { getSimpleNotation } from "shared/lib/utils/chess";
 import { getTopEngineLine } from "shared/types/game/position/EngineLine";
+import Evaluation from "shared/types/game/position/Evaluation";
 import { explainMove } from "shared/lib/reporter/explain";
 import {
     classificationColours,
@@ -55,6 +56,18 @@ function getTopAlternativeMove(currentNode: StateTreeNode) {
     }
 }
 
+function formatEvaluation(evaluation: Evaluation) {
+    if (evaluation.type == "mate") {
+        return evaluation.value == 0
+            ? "#"
+            : `${evaluation.value < 0 ? "-" : ""}M${Math.abs(evaluation.value)}`;
+    }
+
+    const pawns = (evaluation.value / 100).toFixed(2);
+
+    return evaluation.value > 0 ? `+${pawns}` : pawns;
+}
+
 function ClassifiedMoveCard() {
     const { t } = useTranslation(["common", "analysis"]);
 
@@ -62,7 +75,8 @@ function ClassifiedMoveCard() {
 
     const {
         currentStateTreeNode: node,
-        setCurrentStateTreeNode
+        setCurrentStateTreeNode,
+        setAutoplayEnabled
     } = useAnalysisBoardStore();
 
     const {
@@ -119,6 +133,27 @@ function ClassifiedMoveCard() {
         playBoardSound(createdNode);
     }
 
+    const evaluation = getTopEngineLine(node.state.engineLines)?.evaluation;
+
+    const nextNode = node.children.at(0);
+
+    function goToNextMove() {
+        if (!nextNode) return;
+
+        setCurrentStateTreeNode(nextNode);
+        setAutoplayEnabled(false);
+        playBoardSound(nextNode);
+    }
+
+    const showBestButton = !!topAlternativeMove
+        && !!node.state.classification
+        && topAlternativeMove.san != node.state.move?.san
+        && !inalterableClassifications.includes(node.state.classification);
+
+    const showExplainButton = aiExplanation.enabled
+        && !!node.state.classification
+        && !aiExplanation.explanation;
+
     return <div className={styles.wrapper}>
         <div
             className={styles.classificationSection}
@@ -127,60 +162,54 @@ function ClassifiedMoveCard() {
                 : undefined
             }
         >
-            <div className={styles.classification}>
-                <img src={node.state.classification
-                    ? classificationImages[node.state.classification]
-                    : (realtimeClassifyError
-                        ? errorClassificationIcon
-                        : loadingClassificationIcon
-                    )
-                }/>
-
-                <span
-                    className={styles.classificationName}
-                    style={{
-                        color: node.state.classification
-                            ? classificationColours[node.state.classification]
-                            : (realtimeClassifyError
-                                ? classificationColours[Classification.BLUNDER]
-                                : "white"
-                            )
-                    }}
-                >
-                    {node.state.classification
-                        ? playedMoveMessage
+            <div className={styles.header}>
+                <div className={styles.classification}>
+                    <img src={node.state.classification
+                        ? classificationImages[node.state.classification]
                         : (realtimeClassifyError
-                            ? t("error") : t("loading")
+                            ? errorClassificationIcon
+                            : loadingClassificationIcon
                         )
-                    }
-                </span>
+                    }/>
+
+                    <span
+                        className={styles.classificationName}
+                        style={{
+                            color: node.state.classification
+                                ? classificationColours[node.state.classification]
+                                : (realtimeClassifyError
+                                    ? classificationColours[Classification.BLUNDER]
+                                    : "white"
+                                )
+                        }}
+                    >
+                        {node.state.classification
+                            ? playedMoveMessage
+                            : (realtimeClassifyError
+                                ? t("error") : t("loading")
+                            )
+                        }
+                    </span>
+                </div>
+
+                {evaluation
+                    && <span className={
+                        `${styles.evaluationBadge} ${
+                            evaluation.value < 0
+                                || (evaluation.type == "mate" && evaluation.value == 0
+                                    && node.state.fen.split(" ")[1] == "w")
+                                ? styles.blackAdvantage : ""
+                        }`
+                    }>
+                        {formatEvaluation(evaluation)}
+                    </span>
+                }
             </div>
 
             {realtimeClassifyError
                 && <LogMessage style={{ marginTop: "5px" }}>
                     {t(realtimeClassifyError, { ns: "analysis" })}
                 </LogMessage>
-            }
-
-            {topAlternativeMove
-                && node.state.classification
-                && topAlternativeMove.san != node.state.move?.san
-                && !inalterableClassifications.includes(node.state.classification)
-                && <span className={styles.bestAlternativeComment}>
-                    <span>
-                        {t("classifiedMoveCard.alternative", { ns: "analysis" })}
-                    </span>
-
-                    <span
-                        className={styles.bestAlternativeMove}
-                        onClick={playTopAlternative}
-                    >
-                        {settings.analysis.simpleNotation
-                            ? getSimpleNotation(topAlternativeMove)
-                            : topAlternativeMove.san
-                        }
-                    </span>
-                </span>
             }
 
             {node.state.classification
@@ -196,21 +225,6 @@ function ClassifiedMoveCard() {
                 </span>
             }
 
-            {aiExplanation.enabled
-                && node.state.classification
-                && !aiExplanation.explanation
-                && <button
-                    className={styles.aiExplainButton}
-                    disabled={aiExplanation.status == "loading"}
-                    onClick={aiExplanation.requestExplanation}
-                >
-                    {aiExplanation.status == "loading"
-                        ? t("classifiedMoveCard.aiLoading", { ns: "analysis" })
-                        : t("classifiedMoveCard.explainWithAI", { ns: "analysis" })
-                    }
-                </button>
-            }
-
             {aiExplanation.status == "error"
                 && <LogMessage>
                     {t("classifiedMoveCard.aiError", { ns: "analysis" })}
@@ -221,6 +235,48 @@ function ClassifiedMoveCard() {
                 && <LogMessage theme="warn">
                     {t("classifiedMoveCard.aiRateLimited", { ns: "analysis" })}
                 </LogMessage>
+            }
+
+            {(showExplainButton || showBestButton || nextNode)
+                && <div className={styles.actions}>
+                    {showExplainButton
+                        && <button
+                            className={styles.actionButton}
+                            disabled={aiExplanation.status == "loading"}
+                            onClick={aiExplanation.requestExplanation}
+                        >
+                            💡 {aiExplanation.status == "loading"
+                                ? t("classifiedMoveCard.aiLoading", { ns: "analysis" })
+                                : t("classifiedMoveCard.explain", { ns: "analysis" })
+                            }
+                        </button>
+                    }
+
+                    {showBestButton && topAlternativeMove
+                        && <button
+                            className={styles.actionButton}
+                            onClick={playTopAlternative}
+                        >
+                            ★ {t("classifiedMoveCard.best", { ns: "analysis" })}
+                            {" "}
+                            <b>
+                                {settings.analysis.simpleNotation
+                                    ? getSimpleNotation(topAlternativeMove)
+                                    : topAlternativeMove.san
+                                }
+                            </b>
+                        </button>
+                    }
+
+                    {nextNode
+                        && <button
+                            className={styles.actionButton}
+                            onClick={goToNextMove}
+                        >
+                            {t("classifiedMoveCard.next", { ns: "analysis" })} →
+                        </button>
+                    }
+                </div>
             }
         </div>
 
