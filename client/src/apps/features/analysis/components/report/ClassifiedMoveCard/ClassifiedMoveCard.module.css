@@ -50,6 +50,44 @@
     background-color: rgba(0, 0, 0, 0.15);
 }
 
+.explanation {
+    color: white;
+    line-height: 1.4;
+}
+
+.aiExplanation {
+    padding: 8px;
+
+    border-left: 3px solid #6ea8ff;
+    border-radius: 5px;
+    background-color: rgba(0, 0, 0, 0.15);
+    color: white;
+    line-height: 1.4;
+}
+
+.aiExplainButton {
+    align-self: flex-start;
+    padding: 5px 10px;
+
+    border: none;
+    border-radius: 5px;
+    background-color: #3d6fc4;
+    color: white;
+    font-size: 0.95rem;
+
+    cursor: pointer;
+    transition-duration: 0.3s;
+}
+
+.aiExplainButton:hover:not(:disabled) {
+    background-color: #4a80dd;
+}
+
+.aiExplainButton:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
+
 .opening {
     display: flex;
     justify-content: center;

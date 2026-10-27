@@ -131,7 +131,10 @@
             "theory": "is theory",
             "risky": "is a risky idea"
         },
-        "alternative": "The best move was"
+        "alternative": "The best move was",
+        "explainWithAI": "Explain with AI",
+        "aiLoading": "Thinking...",
+        "aiError": "Couldn't get an AI explanation. Please try again."
     },
     "classifications": {
         "brilliant": "Brilliant",

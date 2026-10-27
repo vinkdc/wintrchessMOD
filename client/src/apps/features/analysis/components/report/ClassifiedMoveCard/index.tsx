@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useShallow } from "zustand/react/shallow";
 import { Chess } from "chess.js";
@@ -11,6 +11,7 @@ import {
 import { Classification } from "shared/constants/Classification";
 import { getSimpleNotation } from "shared/lib/utils/chess";
 import { getTopEngineLine } from "shared/types/game/position/EngineLine";
+import { explainMove } from "shared/lib/reporter/explain";
 import {
     classificationColours,
     classificationImages,
@@ -21,6 +22,7 @@ import {
 import useSettingsStore from "@/stores/SettingsStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
+import useAIExplanation from "@analysis/hooks/useAIExplanation";
 import LogMessage from "@/components/common/LogMessage";
 import playBoardSound from "@/lib/boardSounds";
 
@@ -74,6 +76,16 @@ function ClassifiedMoveCard() {
     );
 
     useEffect(() => setRealtimeClassifyError(), [node]);
+
+    const explanationSentences = useMemo(() => {
+        try {
+            return explainMove(node);
+        } catch {
+            return [];
+        }
+    }, [node, node.state.classification]);
+
+    const aiExplanation = useAIExplanation(node);
 
     const nearestOpeningName = findNodeRecursively(
         node,
@@ -169,6 +181,40 @@ function ClassifiedMoveCard() {
                         }
                     </span>
                 </span>
+            }
+
+            {node.state.classification
+                && explanationSentences.length > 0
+                && <span className={styles.explanation}>
+                    {explanationSentences.join(" ")}
+                </span>
+            }
+
+            {aiExplanation.explanation
+                && <span className={styles.aiExplanation}>
+                    {aiExplanation.explanation}
+                </span>
+            }
+
+            {aiExplanation.enabled
+                && node.state.classification
+                && !aiExplanation.explanation
+                && <button
+                    className={styles.aiExplainButton}
+                    disabled={aiExplanation.status == "loading"}
+                    onClick={aiExplanation.requestExplanation}
+                >
+                    {aiExplanation.status == "loading"
+                        ? t("classifiedMoveCard.aiLoading", { ns: "analysis" })
+                        : t("classifiedMoveCard.explainWithAI", { ns: "analysis" })
+                    }
+                </button>
+            }
+
+            {aiExplanation.status == "error"
+                && <LogMessage>
+                    {t("classifiedMoveCard.aiError", { ns: "analysis" })}
+                </LogMessage>
             }
         </div>
 
