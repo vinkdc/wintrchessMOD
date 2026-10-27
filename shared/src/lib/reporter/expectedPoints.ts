@@ -27,9 +27,11 @@ export function getExpectedPoints(
     evaluation: Evaluation,
     options?: ExpectedPointsOptions
 ) {
+    // An explicitly undefined gradient must still fall back to the default
     const opts = {
-        centipawnGradient: defaultCentipawnGradient,
-        ...options
+        ...options,
+        centipawnGradient: options?.centipawnGradient
+            ?? defaultCentipawnGradient
     };
 
     if (evaluation.type == "mate") {
