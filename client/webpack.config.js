@@ -72,5 +72,11 @@ module.exports = {
             silent: true
         })
     ],
+    // Persisted between Docker builds through a cache mount
+    cache: {
+        type: "filesystem",
+        name: nodeEnv,
+        buildDependencies: { config: [__filename] }
+    },
     mode: nodeEnv
 };
