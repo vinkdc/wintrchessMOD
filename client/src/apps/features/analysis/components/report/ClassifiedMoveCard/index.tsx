@@ -261,8 +261,10 @@ function ClassifiedMoveCard() {
         });
     }
 
+    // Blunders hide the answer, so that it can be found with Retry
     const showBestButton = !!topAlternativeMove
         && !!node.state.classification
+        && node.state.classification != Classification.BLUNDER
         && topAlternativeMove.san != node.state.move?.san
         && !inalterableClassifications.includes(node.state.classification);
 
@@ -363,7 +365,7 @@ function ClassifiedMoveCard() {
                         className={styles.actionButton}
                         onClick={showIdeas}
                     >
-                        💡 {t("classifiedMoveCard.explain", { ns: "analysis" })}
+                        {t("classifiedMoveCard.explain", { ns: "analysis" })}
                     </button>
                 }
 
