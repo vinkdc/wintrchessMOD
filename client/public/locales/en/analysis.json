@@ -140,7 +140,11 @@
         "best": "Best",
         "next": "Next",
         "askAI": "Ask AI",
-        "noIdeas": "There's no clear tactic here - this is more about the overall position."
+        "noIdeas": "There's no clear tactic here - this is more about the overall position.",
+        "retry": "Retry",
+        "timeSpent": "Time spent on this move",
+        "timePressure": "You played this with only {{clock}} left on your clock.",
+        "longThink": "You spent {{time}} on this move."
     },
     "classifications": {
         "brilliant": "Brilliant",
@@ -173,5 +177,31 @@
         "preparing": "Analysing in the background... {{progress}}%",
         "ready": "Analysis ready",
         "review": "Review"
+    },
+    "retry": {
+        "title": "Find a better move",
+        "prompt": "You played {{move}} here. Find a better move for {{colour}}.",
+        "white": "White",
+        "black": "Black",
+        "wrongTitle": "Not quite",
+        "wrong": "{{move}} isn't it. Try again.",
+        "sameMove": "{{move}} is the move you played. Try something else.",
+        "solvedTitle": "Correct!",
+        "solvedBest": "{{move}} is the best move.",
+        "solvedGood": "{{move}} is an excellent move. The engine's top choice was {{best}}.",
+        "revealedTitle": "The answer",
+        "revealed": "The best move was {{move}}.",
+        "hint": "Hint",
+        "hintText": "Hint: look at your {{piece}}.",
+        "showAnswer": "Show answer",
+        "cancel": "Cancel",
+        "continue": "Continue"
+    },
+    "timeUsage": {
+        "title": "Time usage",
+        "average": "Average per move",
+        "longest": "Longest think",
+        "pressureErrors": "Errors under time pressure",
+        "hint": "Bars show the time spent on each move. Click one to jump to it."
     }
 }

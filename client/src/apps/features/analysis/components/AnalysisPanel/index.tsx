@@ -9,8 +9,10 @@ import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisTabStore from "@analysis/stores/AnalysisTabStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
 import useReviewStore from "@analysis/stores/ReviewStore";
+import useRetry from "@analysis/hooks/useRetry";
 import ClassifiedMoveCard from "@analysis/components/report/ClassifiedMoveCard";
 import ReviewOverview from "@analysis/components/report/ReviewOverview";
+import RetryCard from "@analysis/components/report/RetryCard";
 import StateTreeTraverser from "@/components/chess/StateTreeTraverser";
 
 import TabBar from "./TabBar";
@@ -58,6 +60,8 @@ function AnalysisPanel({
     );
 
     // The report tab moves from scanning, to an overview, to the review
+    const retryActive = useRetry().active;
+
     const reportStage = scanning
         ? "scanning"
         : (reviewStarted ? "review" : "overview");
@@ -83,8 +87,13 @@ function AnalysisPanel({
                 && <RealtimeEngineArea/>
             }
 
+            {gameAnalysisOpen && reviewing && retryActive
+                && <RetryCard/>
+            }
+
             {gameAnalysisOpen
                 && reviewing
+                && !retryActive
                 && currentNode.state.move
                 && !settings.classifications.hide
                 && (

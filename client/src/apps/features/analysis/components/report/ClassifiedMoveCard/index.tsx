@@ -24,10 +24,15 @@ import {
 import useSettingsStore from "@/stores/SettingsStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
-import useAIExplanation from "@analysis/hooks/useAIExplanation";
 import useReviewNavigation from "@analysis/hooks/useReviewNavigation";
+import useRetry, { retryableClassifications } from "@analysis/hooks/useRetry";
 import LogMessage from "@/components/common/LogMessage";
 import playBoardSound from "@/lib/boardSounds";
+import {
+    formatClockTime,
+    timePressureSeconds,
+    longThinkSeconds
+} from "@analysis/lib/clockTime";
 
 import * as styles from "./ClassifiedMoveCard.module.css";
 
@@ -66,8 +71,15 @@ function computeCachedSentences(
     return sentences;
 }
 
+const errorClassifications = [
+    Classification.INACCURACY,
+    Classification.MISTAKE,
+    Classification.MISS,
+    Classification.BLUNDER
+];
+
 // Pause between taking a move back and playing the best move instead
-const bestMoveDelayMilliseconds = 500;
+const bestMoveDelayMilliseconds = 1000;
 
 function getPlayedMove(currentNode: StateTreeNode) {
     if (!currentNode.parent) return;
@@ -136,12 +148,15 @@ function ClassifiedMoveCard() {
     );
 
     // Explanations are slow to generate, so they are produced just after
-    // the board has updated rather than while navigating
+    // the board has updated rather than while navigating. The previous
+    // explanation stays until then, so the card does not flicker.
     useEffect(() => {
         const cached = getCachedSentences(explanationCache, node);
-        setExplanationSentences(cached || []);
 
-        if (cached) return;
+        if (cached) {
+            setExplanationSentences(cached);
+            return;
+        }
 
         const timeout = setTimeout(() => setExplanationSentences(
             computeCachedSentences(explanationCache, node, explainMove)
@@ -162,8 +177,6 @@ function ClassifiedMoveCard() {
             computeCachedSentences(ideasCache, node, explainMoveIdeas)
         );
     }
-
-    const aiExplanation = useAIExplanation(node);
 
     const nearestOpeningName = findNodeRecursively(
         node,
@@ -189,6 +202,13 @@ function ClassifiedMoveCard() {
 
     const reviewNavigation = useReviewNavigation();
 
+    const retry = useRetry();
+
+    const showRetryButton = !!node.parent
+        && !!node.state.classification
+        && retryableClassifications.includes(node.state.classification)
+        && node.parent.state.engineLines.length > 0;
+
     function playTopAlternative() {
         if (!node.parent) return;
         if (!topAlternativeMove) return;
@@ -213,6 +233,9 @@ function ClassifiedMoveCard() {
 
             const createdNode = addChildMove(parent, bestMoveSan);
 
+            // It is the engine's top move, so there is nothing to classify
+            createdNode.state.classification = Classification.BEST;
+
             setCurrentStateTreeNode(createdNode);
             playBoardSound(createdNode);
         }, bestMoveDelayMilliseconds);
@@ -220,14 +243,28 @@ function ClassifiedMoveCard() {
 
     const evaluation = getTopEngineLine(node.state.engineLines)?.evaluation;
 
+    const { clock, timeSpent } = node.state;
+
+    const isError = !!node.state.classification
+        && errorClassifications.includes(node.state.classification);
+
+    // Errors made in time trouble, or after a long think, say so
+    let clockNote: string | undefined;
+
+    if (isError && clock != undefined && clock <= timePressureSeconds) {
+        clockNote = t("classifiedMoveCard.timePressure", {
+            ns: "analysis", clock: formatClockTime(clock)
+        });
+    } else if (isError && timeSpent != undefined && timeSpent >= longThinkSeconds) {
+        clockNote = t("classifiedMoveCard.longThink", {
+            ns: "analysis", time: formatClockTime(timeSpent)
+        });
+    }
+
     const showBestButton = !!topAlternativeMove
         && !!node.state.classification
         && topAlternativeMove.san != node.state.move?.san
         && !inalterableClassifications.includes(node.state.classification);
-
-    const showExplainButton = aiExplanation.enabled
-        && !!node.state.classification
-        && !aiExplanation.explanation;
 
     const showIdeasButton = !ideaSentences
         && !!node.state.classification
@@ -271,18 +308,29 @@ function ClassifiedMoveCard() {
                     </span>
                 </div>
 
-                {evaluation
-                    && <span className={
-                        `${styles.evaluationBadge} ${
-                            evaluation.value < 0
-                                || (evaluation.type == "mate" && evaluation.value == 0
-                                    && node.state.fen.split(" ")[1] == "w")
-                                ? styles.blackAdvantage : ""
-                        }`
-                    }>
-                        {formatEvaluation(evaluation)}
-                    </span>
-                }
+                <div className={styles.badges}>
+                    {timeSpent != undefined
+                        && <span
+                            className={styles.timeBadge}
+                            title={t("classifiedMoveCard.timeSpent", { ns: "analysis" })}
+                        >
+                            ⏱ {formatClockTime(timeSpent)}
+                        </span>
+                    }
+
+                    {evaluation
+                        && <span className={
+                            `${styles.evaluationBadge} ${
+                                evaluation.value < 0
+                                    || (evaluation.type == "mate" && evaluation.value == 0
+                                        && node.state.fen.split(" ")[1] == "w")
+                                    ? styles.blackAdvantage : ""
+                            }`
+                        }>
+                            {formatEvaluation(evaluation)}
+                        </span>
+                    }
+                </div>
             </div>
 
             {realtimeClassifyError
@@ -291,12 +339,14 @@ function ClassifiedMoveCard() {
                 </LogMessage>
             }
 
-            {node.state.classification
-                && explanationSentences.length > 0
-                && <span className={styles.explanation}>
-                    {explanationSentences.join(" ")}
-                </span>
-            }
+            {/* Always rendered with a reserved height, so stepping through
+                moves does not make the rest of the panel jump around */}
+            <span className={styles.explanation}>
+                {node.state.classification && [
+                    ...explanationSentences,
+                    ...(clockNote ? [clockNote] : [])
+                ].join(" ")}
+            </span>
 
             {ideaSentences
                 && <span className={styles.aiExplanation}>
@@ -307,88 +357,60 @@ function ClassifiedMoveCard() {
                 </span>
             }
 
-            {aiExplanation.explanation
-                && <span className={styles.aiExplanation}>
-                    {aiExplanation.explanation}
-                </span>
-            }
+            <div className={styles.actions}>
+                {showIdeasButton
+                    && <button
+                        className={styles.actionButton}
+                        onClick={showIdeas}
+                    >
+                        💡 {t("classifiedMoveCard.explain", { ns: "analysis" })}
+                    </button>
+                }
 
-            {aiExplanation.status == "error"
-                && <LogMessage>
-                    {t("classifiedMoveCard.aiError", { ns: "analysis" })}
-                </LogMessage>
-            }
-
-            {aiExplanation.status == "rateLimited"
-                && <LogMessage theme="warn">
-                    {t("classifiedMoveCard.aiRateLimited", { ns: "analysis" })}
-                </LogMessage>
-            }
-
-            {(
-                showExplainButton
-                || showIdeasButton
-                || showBestButton
-                || reviewNavigation.inVariation
-                || reviewNavigation.hasNextKeyMoment
-            )
-                && <div className={styles.actions}>
-                    {showExplainButton
-                        && <button
-                            className={styles.actionButton}
-                            disabled={aiExplanation.status == "loading"}
-                            onClick={aiExplanation.requestExplanation}
-                        >
-                            💡 {aiExplanation.status == "loading"
-                                ? t("classifiedMoveCard.aiLoading", { ns: "analysis" })
-                                : t("classifiedMoveCard.askAI", { ns: "analysis" })
+                {showBestButton && topAlternativeMove
+                    && <button
+                        className={styles.actionButton}
+                        onClick={playTopAlternative}
+                    >
+                        ★ {t("classifiedMoveCard.best", { ns: "analysis" })}
+                        {" "}
+                        <b>
+                            {settings.analysis.simpleNotation
+                                ? getSimpleNotation(topAlternativeMove)
+                                : topAlternativeMove.san
                             }
-                        </button>
-                    }
+                        </b>
+                    </button>
+                }
+            </div>
 
-                    {showIdeasButton
+            <div className={styles.navigation}>
+                {showRetryButton
+                    && <button
+                        className={styles.actionButton}
+                        onClick={() => retry.start(node)}
+                    >
+                        🎯 {t("classifiedMoveCard.retry", { ns: "analysis" })}
+                    </button>
+                }
+
+                {reviewNavigation.inVariation
+                    ? <button
+                        className={`${styles.actionButton} ${styles.primaryAction}`}
+                        onClick={reviewNavigation.resume}
+                    >
+                        ↩ {t("review.resume", { ns: "analysis" })}
+                    </button>
+                    : (reviewNavigation.hasNextKeyMoment
                         && <button
-                            className={styles.actionButton}
-                            onClick={showIdeas}
-                        >
-                            💡 {t("classifiedMoveCard.explain", { ns: "analysis" })}
-                        </button>
-                    }
-
-                    {showBestButton && topAlternativeMove
-                        && <button
-                            className={styles.actionButton}
-                            onClick={playTopAlternative}
-                        >
-                            ★ {t("classifiedMoveCard.best", { ns: "analysis" })}
-                            {" "}
-                            <b>
-                                {settings.analysis.simpleNotation
-                                    ? getSimpleNotation(topAlternativeMove)
-                                    : topAlternativeMove.san
-                                }
-                            </b>
-                        </button>
-                    }
-
-                    {reviewNavigation.inVariation
-                        ? <button
                             className={`${styles.actionButton} ${styles.primaryAction}`}
-                            onClick={reviewNavigation.resume}
+                            onClick={reviewNavigation.nextKeyMoment}
                         >
-                            ↩ {t("review.resume", { ns: "analysis" })}
+                            {t("classifiedMoveCard.next", { ns: "analysis" })} →
                         </button>
-                        : (reviewNavigation.hasNextKeyMoment
-                            && <button
-                                className={`${styles.actionButton} ${styles.primaryAction}`}
-                                onClick={reviewNavigation.nextKeyMoment}
-                            >
-                                {t("classifiedMoveCard.next", { ns: "analysis" })} →
-                            </button>
-                        )
-                    }
-                </div>
-            }
+                    )
+                }
+            </div>
         </div>
 
         {nearestOpeningName

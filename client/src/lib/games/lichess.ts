@@ -49,7 +49,8 @@ async function getLichessGames(
         `https://lichess.org/api/games/user/${username}`
         + `?since=${monthStart.getTime()}`
         + `&until=${monthEnd.getTime()}`
-        + "&pgnInJson=true",
+        + "&pgnInJson=true"
+        + "&clocks=true",
         { headers: { Accept: "application/x-ndjson" } }
     );
 

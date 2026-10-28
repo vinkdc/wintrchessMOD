@@ -9,6 +9,7 @@ import useAnalysisGameStore from "@analysis/stores/AnalysisGameStore";
 import useAnalysisTabStore from "@analysis/stores/AnalysisTabStore";
 import useAnalysisBoardStore from "@analysis/stores/AnalysisBoardStore";
 import useAnalysisProgressStore from "@analysis/stores/AnalysisProgressStore";
+import useRetry from "@analysis/hooks/useRetry";
 import Board from "@analysis/components/Board";
 import playBoardSound from "@/lib/boardSounds";
 
@@ -44,7 +45,15 @@ function BoardArea() {
     const evaluation = useEvaluation();
     const suggestionArrows = useSuggestionArrows();
 
+    const retry = useRetry();
+
+    // Arrows would give away the answer while retrying a move
+    const retrySolving = retry.active
+        && (retry.retry?.status == "solving" || retry.retry?.status == "wrong");
+
     function addMove(move: Move) {
+        if (retry.attemptMove(move)) return true;
+
         if (!gameAnalysisOpen) {
             setGameAnalysisOpen(true);
             setActiveTab(AnalysisTab.ANALYSIS);
@@ -77,7 +86,7 @@ function BoardArea() {
         node={currentStateTreeNode}
         flipped={boardFlipped}
         evaluation={evaluation}
-        arrows={suggestionArrows}
+        arrows={retrySolving ? [] : suggestionArrows}
         piecesDraggable={!autoplayEnabled}
         movesLocked={scanning}
         enableClassifications={!settings.classifications.hide}

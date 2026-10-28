@@ -27,6 +27,20 @@
     min-width: 0;
 }
 
+.badges {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 6px;
+}
+
+.timeBadge {
+    color: #c9cbd1;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
 .evaluationBadge {
     flex-shrink: 0;
     padding: 3px 8px;
@@ -46,13 +60,27 @@
 
 .actions {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
+    min-height: 37px;
     margin-top: 4px;
 }
 
+/* Retry, Next and Resume get their own row, so they never change position */
+.navigation {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 6px;
+    min-height: 37px;
+}
+
 .actionButton {
-    padding: 8px 10px;
+    min-width: 0;
+    padding: 8px 6px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 
     border: none;
     border-radius: 8px;
@@ -89,10 +117,15 @@
 }
 
 .classificationName {
+    overflow: hidden;
     font-size: 1.4rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
+/* Room for five lines, enough for nearly every explanation */
 .explanation {
+    min-height: 7em;
     color: white;
     line-height: 1.4;
 }

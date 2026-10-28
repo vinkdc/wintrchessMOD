@@ -1,7 +1,11 @@
 import express, { Router } from "express";
 import { StatusCodes } from "http-status-codes";
 import Anthropic from "@anthropic-ai/sdk";
-import { GoogleGenAI, ApiError as GeminiApiError } from "@google/genai";
+import {
+    GoogleGenAI,
+    ApiError as GeminiApiError,
+    ThinkingLevel
+} from "@google/genai";
 import z from "zod";
 
 import { evaluationSchema } from "shared/types/game/position/Evaluation";
@@ -54,7 +58,13 @@ async function explainWithGemini(prompt: string) {
         const response = await geminiClient.models.generateContent({
             model: process.env.GEMINI_MODEL || "gemini-3.8-flash",
             contents: prompt,
-            config: { systemInstruction: systemPrompt }
+            config: {
+                systemInstruction: systemPrompt,
+                // A few sentences need no reasoning, and thinking is the
+                // bulk of the response time
+                thinkingConfig: { thinkingLevel: ThinkingLevel.MINIMAL },
+                maxOutputTokens: 400
+            }
         });
 
         return response.text || "";

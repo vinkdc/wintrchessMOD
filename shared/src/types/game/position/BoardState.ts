@@ -12,7 +12,11 @@ export const boardStateSchema = z.object({
     engineLines: z.array(engineLineSchema),
     classification: z.enum(Classification).optional(),
     accuracy: z.number().optional(),
-    opening: z.string().optional()
+    opening: z.string().optional(),
+    // Seconds left on the mover's clock after the move, and seconds spent
+    // on it, when the PGN records clock times
+    clock: z.number().optional(),
+    timeSpent: z.number().optional()
 });
 
 export type BoardState = z.infer<typeof boardStateSchema>;

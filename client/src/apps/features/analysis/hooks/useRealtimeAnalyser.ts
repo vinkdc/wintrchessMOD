@@ -61,6 +61,13 @@ function useRealtimeAnalyser() {
     async function considerRealtimeAnalyse() {
         if (!currentStateTreeNode.parent) return;
 
+        // Variation moves keep the classification they were given, such as
+        // the best move played from the move card
+        if (
+            !currentStateTreeNode.mainline
+            && currentStateTreeNode.state.classification
+        ) return;
+
         // If there is not enough data for a centipawn comparison
         const parentState = currentStateTreeNode.parent.state;
 

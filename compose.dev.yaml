@@ -15,6 +15,9 @@ services:
       ORIGIN: http://localhost:8090
       AUTH_SECRET: development-only-secret
       DATABASE_URI: mongodb://database/wintrchess
+      # AI move explanations, taken from .env or the shell when set
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-}
     volumes:
       - .:/app
     ports:
