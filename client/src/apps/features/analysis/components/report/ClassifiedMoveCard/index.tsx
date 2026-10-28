@@ -390,7 +390,7 @@ function ClassifiedMoveCard() {
                         className={styles.actionButton}
                         onClick={() => retry.start(node)}
                     >
-                        🎯 {t("classifiedMoveCard.retry", { ns: "analysis" })}
+                        {t("classifiedMoveCard.retry", { ns: "analysis" })}
                     </button>
                 }
 
